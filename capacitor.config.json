@@ -3,7 +3,7 @@
     "appName": "E视界",
     "webDir": "public",
     "server": {
-        "url": "https://ednovas.video",
+        "url": "http://donggua.14812910.xyz",
         "cleartext": true
     },
     "plugins": {
@@ -13,4 +13,5 @@
             "backgroundColor": "#000000"
         }
     }
+
 }
