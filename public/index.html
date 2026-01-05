@@ -2534,22 +2534,8 @@
             display: none !important;
         }
 
-        /* 📺 网页全屏模式 (Web Fullscreen) */
-        .dplayer-web-fullscreen {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 2147483647 !important;
-            background: #000 !important;
-        }
-
-        /* 网页全屏时隐藏滚动条 */
-        html:has(.dplayer-web-fullscreen),
-        body:has(.dplayer-web-fullscreen) {
-            overflow: hidden !important;
-        }
+        /* 📺 网页全屏模式 - 只隐藏导航栏，不覆盖 DPlayer 原生样式 */
+        /* DPlayer 自己会处理网页全屏的布局 */
     </style>
 </head>
 
