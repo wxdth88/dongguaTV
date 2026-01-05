@@ -5076,8 +5076,11 @@
                             });
                         }
 
-                        // 📱 安卓全屏优化：自动横屏 + 去除顶部遮挡
+                        // 📱 安卓全屏优化：自动横屏 + 隐藏状态栏
                         dp.on('fullscreen', () => {
+                            console.log('[Fullscreen] 进入全屏');
+
+                            // 1. 尝试锁定横屏 (Web API)
                             try {
                                 if (screen.orientation && screen.orientation.lock) {
                                     screen.orientation.lock('landscape').catch(e => console.warn('锁屏失败:', e));
@@ -5085,10 +5088,38 @@
                                     window.screen.lockOrientation('landscape');
                                 }
                             } catch (e) { }
+
+                            // 2. Capacitor Screen Orientation 插件
+                            try {
+                                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ScreenOrientation) {
+                                    window.Capacitor.Plugins.ScreenOrientation.lock({ orientation: 'landscape' });
+                                }
+                            } catch (e) { console.warn('ScreenOrientation plugin error:', e); }
+
+                            // 3. 隐藏 Capacitor StatusBar
+                            try {
+                                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
+                                    window.Capacitor.Plugins.StatusBar.hide();
+                                    window.Capacitor.Plugins.StatusBar.setOverlaysWebView({ overlay: true });
+                                }
+                            } catch (e) { console.warn('StatusBar plugin error:', e); }
+
+                            // 4. 强制移除顶部间距
                             document.body.classList.add('dplayer-fullscreen-active');
+                            document.body.style.paddingTop = '0';
+                            document.body.style.marginTop = '0';
+
+                            // 5. 查找并隐藏所有可能的顶部占位元素
+                            document.querySelectorAll('[style*="padding-top"], .navbar-custom, nav').forEach(el => {
+                                el.dataset.originalDisplay = el.style.display;
+                                if (!el.closest('#dplayer')) el.style.display = 'none';
+                            });
                         });
 
                         dp.on('fullscreen_cancel', () => {
+                            console.log('[Fullscreen] 退出全屏');
+
+                            // 1. 解锁方向 (Web API)
                             try {
                                 if (screen.orientation && screen.orientation.unlock) {
                                     screen.orientation.unlock();
@@ -5096,7 +5127,32 @@
                                     window.screen.unlockOrientation();
                                 }
                             } catch (e) { }
+
+                            // 2. Capacitor Screen Orientation 插件
+                            try {
+                                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ScreenOrientation) {
+                                    window.Capacitor.Plugins.ScreenOrientation.unlock();
+                                }
+                            } catch (e) { }
+
+                            // 3. 恢复 Capacitor StatusBar
+                            try {
+                                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
+                                    window.Capacitor.Plugins.StatusBar.show();
+                                    window.Capacitor.Plugins.StatusBar.setOverlaysWebView({ overlay: false });
+                                }
+                            } catch (e) { }
+
+                            // 4. 移除全屏样式
                             document.body.classList.remove('dplayer-fullscreen-active');
+                            document.body.style.paddingTop = '';
+                            document.body.style.marginTop = '';
+
+                            // 5. 恢复隐藏的元素
+                            document.querySelectorAll('[data-original-display]').forEach(el => {
+                                el.style.display = el.dataset.originalDisplay || '';
+                                delete el.dataset.originalDisplay;
+                            });
                         });
 
                         // ========== 🔧 设置菜单修复 ==========
